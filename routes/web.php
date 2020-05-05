@@ -14,3 +14,9 @@
 Route::get('/', function () {
     return view('contenido/contenido');
 });
+
+Route::get('/privilegio', 'PrivilegioController@index');
+Route::post('/privilegio/registrar', 'PrivilegioCOntroller@store');//Si da algun error, se puede cambiar post por put :V
+Route::put('/privilegio/actualizar', 'PrivilegioController@update');
+
+Route::get('/rol', 'RolController@index');
