@@ -16,7 +16,18 @@ Route::get('/', function () {
 });
 
 Route::get('/privilegio', 'PrivilegioController@index');
-Route::post('/privilegio/registrar', 'PrivilegioCOntroller@store');//Si da algun error, se puede cambiar post por put :V
+Route::post('/privilegio/registrar', 'PrivilegioController@store');
 Route::put('/privilegio/actualizar', 'PrivilegioController@update');
+Route::put('/privilegio/eliminar', 'PrivilegioController@destroy');
 
 Route::get('/rol', 'RolController@index');
+Route::post('/rol/registrar', 'RolController@store');
+Route::put('/rol/actualizar', 'RolController@update');
+Route::put('/rol/eliminar', 'RolController@destroy');
+
+Route::get('/usuario', 'UsuarioController@index');
+Route::post('/usuario/registrar', 'UsuarioController@store');
+Route::put('/usuario/actualizar', 'UsuarioController@update');
+Route::put('/usuario/eliminar', 'UsuarioController@destroy');
+Route::get('/rol/selectRoles', 'UsuarioController@selectRoles');
+Route::get('/empleado/selectEmpleado', 'UsuarioController@selectEmpleados');

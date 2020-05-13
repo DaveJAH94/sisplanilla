@@ -13,21 +13,25 @@ class CreateUsersTable extends Migration
      */
     public function up()
     {
-        Schema::create('users', function (Blueprint $table) {//modificar después a "usuarios"
-            $table->integer('id_usuario')->unsigned();
-            $table->foreign('id_usuario')->references('codigo_empleado')->on('empleados')->onDelete('cascade');
-
-            $table->string('username',25)->unique();
-            $table->string('password',20);
+        Schema::create('usuarios', function (Blueprint $table) {
+            //ATRIBUTOS
+            $table->increments('id_usuario');
+            $table->integer('id_rol')->unsigned();
+            $table->char('codigo_empleado', 6);
+            $table->string('username', 25)->unique();
+            $table->string('password', 20);
             $table->boolean('activo')->default(1);
             $table->datetime('first_session')->nullable();
             $table->datetime('last_session')->nullable();
+            $table->integer('intentos_fallidos')->nullable() ;
 
-            $table->integer('id_rol')->unsigned();
+            //LLAVES
+            $table->primary('id_usuario');
             $table->foreign('id_rol')->references('id_rol')->on('roles');
-  
+            $table->foreign('codigo_empleado')->references('codigo_empleado')->on('empleados')->onDelete('cascade');
             $table->rememberToken();
-            //$table->timestamps();
+            
+            $table->timestamps();
         });
     }
 

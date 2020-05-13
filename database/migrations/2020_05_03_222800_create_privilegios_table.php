@@ -14,10 +14,11 @@ class CreatePrivilegiosTable extends Migration
     public function up()
     {
         Schema::create('privilegios', function (Blueprint $table) {
-            $table->bigIncrements('id_privilegio');
-            $table->string('nombre',25);
-            $table->string('accion',10);
-            $table->string('entidad',30);
+            //ATRIBUTOS
+            $table->increments('id_privilegio');
+            $table->string('nombre', 25); //Cambiar a 40 la longitud
+            $table->string('accion', 10);
+            $table->string('entidad', 30);
             $table->timestamps();
         });
     }

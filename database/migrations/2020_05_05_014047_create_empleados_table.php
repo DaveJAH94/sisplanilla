@@ -34,7 +34,7 @@ class CreateEmpleadosTable extends Migration
             
             $table->primary('codigo_empleado');
             $table->foreign('codigo_jefe')->references('codigo_empleado')->on('empleados');
-            $table->foreign('codigo_profesion')->references('id')->on('profesiones');
+            $table->foreign('codigo_profesion')->references('id_profesion')->on('profesiones');
             $table->foreign('id_direccion')->references('id_direccion')->on('direcciones');
             $table->foreign('numero_documento_identificacion')->references('numero_documento_identificacion')->on('documentos_identificacion');
             $table->foreign('id_estado_civil')->references('id_estado_civil')->on('estados_civiles');

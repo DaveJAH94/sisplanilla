@@ -4,15 +4,14 @@
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">Home</li>
                 <li class="breadcrumb-item">Administrador</li>
-                <li class="breadcrumb-item">Permisos de acceso</li>
-                <li class="breadcrumb-item active">Roles</li>
+                <li class="breadcrumb-item active">Usuarios</li>
             </ol>
             <div class="container-fluid">
                 <!-- Ejemplo de tabla Listado -->
                 <div class="card">
                     <div class="card-header">
-                        <i class="fa fa-align-justify"></i> Roles
-                        <button type="button" @click="abrirModal('rol', 'registrar')"  class="btn btn-success btn-nuevo">
+                        <i class="fa fa-align-justify"></i> Usuarios
+                        <button type="button" @click="abrirModal('usuario', 'registrar')"  class="btn btn-success btn-nuevo">
                             <i class="icon-plus"></i> <span style="margin-left:2%">Nuevo</span>
                         </button>
                     </div>
@@ -21,10 +20,11 @@
                             <div class="col-md-6">
                                 <div class="input-group">
                                     <select class="form-control col-md-3" v-model="criterio">
-                                      <option value="nombre">Nombre</option>
+                                      <option value="username">Nombre Usuario</option>
+                                      <option value="codigo_empleado">Codigo Empleado</option>
                                     </select>
-                                    <input type="text" v-model="buscar" @keyup.enter="listarRol(1, buscar, criterio)" class="form-control" placeholder="Texto a buscar">
-                                    <button type="submit" @click="listarRol(1, buscar, criterio)" class="btn btn-primary btn-buscar"><i class="fa fa-search"></i> Buscar</button>
+                                    <input type="text" v-model="buscar" @keyup.enter="listarUsuario(1, buscar, criterio)" class="form-control" placeholder="Texto a buscar">
+                                    <button type="submit" @click="listarUsuario(1, buscar, criterio)" class="btn btn-primary btn-buscar"><i class="fa fa-search"></i> Buscar</button>
                                 </div>
                             </div>
                         </div>
@@ -32,27 +32,29 @@
                             <thead>
                                 <tr>
                                     <th style="text-align: center">ID</th>
-                                    <th>Nombre</th>
-                                    <th>Privilegios</th>
+                                    <th>Codigo empleado</th>
+                                    <th>Nombre de usuario</th>
+                                    <th>Rol asignado</th>
+                                    <th>Activo</th>
+                                    <th>Primer acceso</th>
+                                    <th>Ultimo acceso</th>
                                     <th style="text-align: center">Opciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="rol in arrayRol" :key="rol.id_rol">
-                                    <td v-text="rol.id_rol" style="text-align: center"></td>
-                                    <td v-text="rol.nombre"></td>
-                                    <td></td>
+                                <tr v-for="usuario in arrayUsuario" :key="usuario.id_usuario">
+                                    <td v-text="usuario.id_usuario" style="text-align: center"></td>
+                                    <td v-text="usuario.codigo_empleado"></td>
+                                    <td v-text="usuario.username"></td>
+                                    <td v-text="usuario.nombre_rol"></td>
+                                    <td v-text="usuario.activo"></td>
+                                    <td v-text="usuario.first_session"></td>
+                                    <td v-text="usuario.last_session"></td>
                                     <td style="text-align: center;">
-                                        <button type="button" @click="abrirModalVincular(rol)" class="btn btn-info btn-sm btn-circle-text-white">
-                                          <i class="icon-plus"></i>
-                                        </button>
-                                        <button type="button" @click="abrirModalVincular(rol)" class="btn btn-secondary btn-sm btn-circle-text-white">
-                                          <i class="icon-minus"></i>
-                                        </button>
-                                        <button type="button" @click="abrirModal('rol', 'actualizar', rol)" class="btn btn-warning btn-sm btn-circle-text-white">
+                                        <button type="button" @click="abrirModal('usuario', 'actualizar', usuario)" class="btn btn-warning btn-sm btn-circle-text-white">
                                           <i class="icon-pencil"></i>
                                         </button>
-                                        <button type="button" @click="abrirModalEliminar(rol)" class="btn btn-danger btn-sm btn-circle">
+                                        <button type="button" @click="abrirModalEliminar(usuario)" class="btn btn-danger btn-sm btn-circle">
                                           <i class="icon-trash"></i>
                                         </button>
                                     </td>
@@ -89,12 +91,34 @@
                         <div class="modal-body" style="padding:4%">
                             <form action="" method="post" enctype="multipart/form-data" class="form-horizontal"> 
                                 <div class="form-group">
-                                    <label for="nombre">Nombre</label>
-                                    <input type="text" v-model="nombre" class="form-control" placeholder="Ingrese el nombre del rol">
+                                    <label for="username">Nombre de usuario</label>
+                                    <input type="text" v-model="username" class="form-control" placeholder="Ingrese el nombre de usuario">
                                 </div>
-                                <div v-show="errorRol" class="form-group div-error">
+                                <div class="form-group">
+                                    <label for="password">Contraseña</label>
+                                    <input type="text" v-model="password" class="form-control" placeholder="Ingrese la contraseña">
+                                </div>
+                                <div class="form-group">
+                                    <label for="rol">Rol</label>
+                                    <select v-model="id_rol" class="form-control">
+                                        <option value="0" selected>-- Seleccione rol --</option>
+                                        <option v-for="rol in arrayRol" :key="rol.id_rol" :value="rol.id_rol" v-text="rol.nombre"></option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="empleado">Empleado</label>
+                                    <select v-model="codigo_empleado" class="form-control">
+                                        <option value="" selected>-- Seleccione empleado --</option>
+                                        <option v-for="empleado in arrayEmpleado" :key="empleado.codigo_empleado" :value="empleado.codigo_empleado" v-text="empleado.nombres+' '+empleado.apellidos"></option>
+                                    </select>
+                                </div>
+                                <div style="margin-left:5%" class="form-group form-check">
+                                    <input type="checkbox" v-model="activo" class="form-check-input" placeholder="Ingrese estado del usuario">
+                                    <label for="activo" class="form-check-label">Activo</label>
+                                </div>
+                                <div v-show="errorUsuario" class="form-group div-error">
                                     <div class="text-center text-error">
-                                        <div v-for="error in errorMostrarMsjRol" :key="error" v-text="error">
+                                        <div v-for="error in errorMostrarMsjUsuario" :key="error" v-text="error">
 
                                         </div>
                                     </div>
@@ -142,14 +166,23 @@
     export default {
         data (){
             return {
+                id_usuario: 0,
                 id_rol: 0,
-                nombre : '',
+                nombre_rol: '',
+                codigo_empleado: '',
+                username: '',
+                password: '',
+                activo: 0,
+                first_session: '',
+                last_session: '',
+                intentios_fallidos: '',
+                arrayUsuario : [],
                 arrayRol : [],
                 modal : 0,
                 tituloModal : '',
                 tipoAccion : 0,
-                errorRol: 0,
-                errorMostrarMsjRol: [],
+                errorUsuario: 0,
+                errorMostrarMsjUsuario: [],
                 pagination : {
                     'total' : 0,
                     'current_page' : 0,
@@ -159,9 +192,13 @@
                     'to' : 0,
                 },
                 offset : 3,
-                criterio : 'nombre',
+                criterio : 'username',
                 buscar : '',
-                modalEliminar: 0
+                modalEliminar: 0,
+                arrayEmpleado: [],
+                nombre: '',
+                nombres: '',
+                apellidos: ''
             }
         },
         computed:{
@@ -194,13 +231,36 @@
             }
         },
         methods : {
-            listarRol (page,buscar,criterio){
+            listarUsuario (page,buscar,criterio){
                 let me=this;
-                var url= '/rol?page=' + page + '&buscar='+ buscar + '&criterio='+ criterio;
+                var url= '/usuario?page=' + page + '&buscar='+ buscar + '&criterio='+ criterio;
                 axios.get(url).then(function (response) {
-                    var respuesta= response.data;
-                    me.arrayRol = respuesta.roles.data;
+                    var respuesta  = response.data;
+                    me.arrayUsuario = respuesta.usuarios.data;
                     me.pagination= respuesta.pagination;
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+            },
+            selectRol(){
+                let me=this;
+                var url= '/rol/selectRoles';
+                axios.get(url).then(function (response) {
+                    var respuesta  = response.data;
+                    me.arrayRol = respuesta.roles;
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+            },
+            selectEmpleado(){
+                let me=this;
+                var url= '/empleado/selectEmpleado';
+                axios.get(url).then(function (response) {
+                    var respuesta  = response.data;
+                    console.log(respuesta.empleados);
+                    me.arrayEmpleado = respuesta.empleados;
                 })
                 .catch(function (error) {
                     console.log(error);
@@ -211,7 +271,7 @@
                 //Actualiza la página actual
                 me.pagination.current_page = page;
                 //Envia la petición para visualizar la data de esa página
-                me.listarRol(page,buscar,criterio);
+                me.listarUsuario(page,buscar,criterio);
             },
 
             //ELIMINAR ROL
@@ -295,14 +355,14 @@
             abrirModal(modelo, accion, data = []){
             switch(modelo)
             {
-                case "rol":
+                case "usuario":
                     {
                         switch(accion){
                             case 'registrar':
                                 {
                                     this.modal = 1;
                                     this.nombre = '';
-                                    this.tituloModal = 'Registrar Rol';
+                                    this.tituloModal = 'Registrar Usuario';
                                     this.tipoAccion = 1;
                                     break
                                 }
@@ -311,12 +371,14 @@
                                     this.modal = 1;
                                     this.nombre = data['nombre'];
                                     this.id_rol = data['id_rol'];
-                                    this.tituloModal = 'Actualizar Rol';
+                                    this.tituloModal = 'Actualizar Usuario';
                                     this.tipoAccion = 2;
                                     break
                                 }
                         }
                     }
+                this.selectRol();   
+                this.selectEmpleado(); 
             }
         },
 
@@ -331,7 +393,7 @@
 
         },
         mounted() {
-            this.listarRol(1, this.buscar, this.criterio);
+            this.listarUsuario(1, this.buscar, this.criterio);
         }
     }
 </script>
