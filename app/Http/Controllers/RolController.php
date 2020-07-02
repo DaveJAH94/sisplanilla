@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Rol;
+use App\Roles_Privilegios;
+use App\Privilegio;
 
 class RolController extends Controller
 {
@@ -16,11 +18,22 @@ class RolController extends Controller
         $criterio = $request->criterio;
 
         if ($buscar==''){
-            $roles = Rol::orderBy('id_rol', 'desc')->paginate(6);
+            $roles = Rol::orderBy('id_rol', 'desc')->paginate(4);
         }
         else{
-            $roles = Rol::where($criterio, 'like', '%'. $buscar . '%')->orderBy('id_rol', 'desc')->paginate(6);
+            $roles = Rol::where($criterio, 'like', '%'. $buscar . '%')->orderBy('id_rol', 'desc')->paginate(4);
         }
+
+        $roles_privilegios = Roles_Privilegios::join('roles', 'roles_privilegios.id_rol', '=', 'roles.id_rol')
+                                                ->join('privilegios', 'roles_privilegios.id_privilegio', '=', 'privilegios.id_privilegio')
+                                                ->select('roles_privilegios.id', 'roles_privilegios.id_rol', 'roles_privilegios.id_privilegio', 'privilegios.nombre', 'privilegios.accion', 'privilegios.entidad')
+                                                ->orderBy('privilegios.entidad', 'asc')
+                                                ->orderBy('roles.id_rol', 'asc')
+                                                ->get();
+
+        $privilegios = Privilegio::orderBy('privilegios.entidad', 'asc')
+                                    ->orderBy('privilegios.accion', 'asc')
+                                    ->get();
 
         return [
             'pagination' => [
@@ -31,7 +44,9 @@ class RolController extends Controller
                 'from'          => $roles->firstItem(),
                 'to'            => $roles->lastItem(),
             ],
-            'roles' => $roles
+            'roles' => $roles,
+            'privilegios' => $privilegios,
+            'roles_privilegios' => $roles_privilegios
         ];
     }
 
@@ -56,9 +71,9 @@ class RolController extends Controller
     //**
     public function destroy(Request $request)
     {
-        if(!$request->ajax()) return redirect('/');
+        if (!$request->ajax()) return redirect('/');
         $rol = Rol::findOrFail($request->id_rol);
-        $rol->delete();   
+        $rol->delete();  
     }
 
     

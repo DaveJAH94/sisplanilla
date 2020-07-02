@@ -2,8 +2,8 @@
             <main class="main">
             <!-- Breadcrumb -->
             <ol class="breadcrumb">
-                <li class="breadcrumb-item">Home</li>
                 <li class="breadcrumb-item">Administrador</li>
+                <li class="breadcrumb-item">Mantenimiento</li>
                 <li class="breadcrumb-item">Permisos de acceso</li>
                 <li class="breadcrumb-item active">Roles</li>
             </ol>
@@ -23,7 +23,7 @@
                                     <select class="form-control col-md-3" v-model="criterio">
                                       <option value="nombre">Nombre</option>
                                     </select>
-                                    <input type="text" v-model="buscar" @keyup.enter="listarRol(1, buscar, criterio)" class="form-control" placeholder="Texto a buscar">
+                                    <input type="text" v-model="buscar" @keyup.enter="listarRol(1, buscar, criterio)" class="form-control col-md-5" placeholder="Texto a buscar">
                                     <button type="submit" @click="listarRol(1, buscar, criterio)" class="btn btn-primary btn-buscar"><i class="fa fa-search"></i> Buscar</button>
                                 </div>
                             </div>
@@ -41,13 +41,14 @@
                                 <tr v-for="rol in arrayRol" :key="rol.id_rol">
                                     <td v-text="rol.id_rol" style="text-align: center"></td>
                                     <td v-text="rol.nombre"></td>
-                                    <td></td>
+                                    <td style="font-size: 80%">
+                                        <p style="margin-bottom: 0%" v-for="(rp, index) in arrayRolesPrivilegios" :key="index + rp.id_privilegio">
+                                            <span v-if="rol.id_rol == rp.id_rol" v-text="'• '+rp.nombre"></span>
+                                        </p>
+                                    </td>
                                     <td style="text-align: center;">
-                                        <button type="button" @click="abrirModalVincular(rol)" class="btn btn-info btn-sm btn-circle-text-white">
-                                          <i class="icon-plus"></i>
-                                        </button>
-                                        <button type="button" @click="abrirModalVincular(rol)" class="btn btn-secondary btn-sm btn-circle-text-white">
-                                          <i class="icon-minus"></i>
+                                        <button type="button" @click="abrirModalVincular(rol.id_rol, rol.nombre)" class="btn btn-info btn-sm btn-circle-text-white">
+                                          <i class="icon-plus"></i> <i class="icon-minus"></i>
                                         </button>
                                         <button type="button" @click="abrirModal('rol', 'actualizar', rol)" class="btn btn-warning btn-sm btn-circle-text-white">
                                           <i class="icon-pencil"></i>
@@ -76,6 +77,7 @@
                 </div>
                 <!-- Fin ejemplo de tabla Listado -->
             </div>
+            
             <!--Inicio del modal agregar/actualizar-->
             <div class="modal fade" tabindex="-1" :class="{'mostrar' : modal}" role="dialog" aria-labelledby="myModalLabel" style="display: none;" aria-hidden="true">
                 <div class="modal-dialog modal-primary" role="document" style="border-radius: 4px;">
@@ -105,6 +107,39 @@
                             <button type="button" class="btn btn-secondary btn-circle-text-white" @click="cerrarModal()">Cerrar</button>
                             <button type="button" v-if="tipoAccion==1" @click="registrarRol()" class="btn btn-primary btn-circle">Guardar</button>
                             <button type="button" v-if="tipoAccion==2" @click="actualizarRol()"  class="btn btn-primary btn-circle">Actualizar</button>
+                        </div>
+                    </div>
+                    <!-- /.modal-content -->
+                </div>
+                <!-- /.modal-dialog -->
+            </div>
+            <!-- Fin del modal -->
+            <!--Inicio del modal vincular/desvincular privilegios-->
+            <div class="modal fade" :class="{'mostrar': modalVincular}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: none;" aria-hidden="true">
+                <div class="modal-dialog modal-primary modal-dialog-scrollable" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title">Asignar Privilegios a: {{nombre}}</h4>
+                            <button type="button" @click="cerrarModalVincular()" class="close" aria-label="Close">
+                              <span aria-hidden="true" style="color:white">×</span>
+                            </button>
+                        </div>
+                        <div id="modal-vinculacion" class="modal-body" style="padding:4%;max-height:400px;overflow-y:scroll;">
+                            <form action="" method="post" enctype="multipart/form-data" class="form-horizontal"> 
+                                <div>
+                                    <div v-for="(p, i) in arrayPrivilegios" :key="i" class="form-group">
+                                        <div v-if="privilegioAnterior(p.id_privilegio)">
+                                            <h6 style="color:white;border-radius:10px;background-color:#91bdcc; padding-left: 2%; padding-top: 2%; padding-bottom: 2%;" v-text="p.entidad"></h6>
+                                        </div>
+                                        <input @click="agregarVinculacion(id_rol, p.id_privilegio)" v-bind:checked="buscarEnRolActual(id_rol, p.id_privilegio)" style="margin-left:3%" type="checkbox" class="form-check-input input-checked_rp">
+                                        <label style="margin-left:9%" v-text="p.nombre"></label>
+                                    </div>    
+                                </div>                              
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary btn-circle-text-white" @click="cerrarModalVincular()">Cerrar</button>
+                            <button @click="guardarListaRP()" type="button" class="btn btn-primary btn-circle">Guardar vinculación de privilegios</button>
                         </div>
                     </div>
                     <!-- /.modal-content -->
@@ -161,7 +196,13 @@
                 offset : 3,
                 criterio : 'nombre',
                 buscar : '',
-                modalEliminar: 0
+                modalEliminar: 0,
+                arrayRolesPrivilegios: [],
+                modalVincular: 0,
+                //PARA ALMACENAR LAS VINCULACIONES SELECCIONADAS
+                arrayVinculacionCheck: [],
+                arrayVinculacionOriginal: [],
+                arrayPrivilegios: []
             }
         },
         computed:{
@@ -194,18 +235,27 @@
             }
         },
         methods : {
+
+            //LISTA DE ROLES CON PRIVILEGIOS ASIGNADOS
             listarRol (page,buscar,criterio){
                 let me=this;
                 var url= '/rol?page=' + page + '&buscar='+ buscar + '&criterio='+ criterio;
                 axios.get(url).then(function (response) {
                     var respuesta= response.data;
                     me.arrayRol = respuesta.roles.data;
-                    me.pagination= respuesta.pagination;
+                    me.pagination = respuesta.pagination;
+                    me.arrayRolesPrivilegios = respuesta.roles_privilegios;
+                    me.arrayPrivilegios = respuesta.privilegios;
+                    console.log(respuesta);
+                    console.log(respuesta.roles_privilegios);
+                    //console.log("PRIVILEGIOS: "+JSON.stringify(me.arrayPrivilegios));
                 })
                 .catch(function (error) {
                     console.log(error);
                 });
             },
+
+            //PAGINACION
             cambiarPagina(page,buscar,criterio){
                 let me = this;
                 //Actualiza la página actual
@@ -214,8 +264,148 @@
                 me.listarRol(page,buscar,criterio);
             },
 
+            //VERIFICAR LA VINCULACION NO ASIGNADA ANTERIOR PARA ESTABLECER TITULO DE ENTIDAD
+            privilegioAnterior(id){
+                var ban = 0;
+                var index = -1;
+                var verificarEntidad = this.arrayPrivilegios.find(function(item, i){
+                    if(item.id_privilegio === id){
+                        index = i;
+                    }
+                });
+                //console.log(index);
+                if(index === '0' || index === 0){
+                    ban = 1;
+                    //console.log(this.arrayRolesPrivilegios[index-1]+" "+this.arrayRolesPrivilegios[index]['entidad']);
+                } else {
+                    if(this.arrayPrivilegios[index-1]['entidad'] !== this.arrayPrivilegios[index]['entidad']){
+                    ban = 1;
+                    //console.log('PONER NUEVO TITULO['+index+']: '+this.arrayRolesPrivilegios[index-1]['entidad']+" "+this.arrayRolesPrivilegios[index]['entidad']);
+                    } else {
+                        ban = 0;
+                        //console.log('SEGUIR['+index+']: '+this.arrayRolesPrivilegios[index-1]['entidad']+" "+this.arrayRolesPrivilegios[index]['entidad']);
+                    }
+                }
+                return ban;
+            },
+
+            //IMPRIMIR CHECKBOX SEGUN ROL Y ENTIDAD ANTERIOR
+            rolAnterior(id){
+                var ban = 0;
+                var index = -1;
+                this.arrayRolesPrivilegios.find(function(item, i){
+                    if(item.id === id){
+                        index = i;
+                    }
+                });
+                
+                //console.log(index);
+                if(index === '0' || index === 0){
+                    ban = 1;
+                    //console.log(this.arrayRolesPrivilegios[index-1]+" "+this.arrayRolesPrivilegios[index]['entidad']);
+                } else {
+                    if(this.arrayRolesPrivilegios[index-1]['entidad'] !== this.arrayRolesPrivilegios[index]['entidad']){
+                    ban = 1;
+                    //console.log('PONER NUEVO TITULO['+index+']: '+this.arrayRolesPrivilegios[index-1]['entidad']+" "+this.arrayRolesPrivilegios[index]['entidad']);
+                    } else if(this.arrayRolesPrivilegios[index-1]['id_rol'] === this.arrayRolesPrivilegios[index]['id_rol']){
+                        ban = 1;
+                        //console.log('SEGUIR['+index+']: '+this.arrayRolesPrivilegios[index-1]['entidad']+" "+this.arrayRolesPrivilegios[index]['entidad']);
+                    } else {
+                        ban = 0;
+                    }
+                }
+                return ban;
+            },
+
+            //VERIFICAR SI EXISTE
+            buscarEnRolActual(id_rol, id_privilegio){
+                var ban = false;
+                var verificarVinculacion = this.arrayRolesPrivilegios.find(function(item, i){
+                    //console.log('NUEVA COMPARACION');
+                    //console.log('*ID ROL: '+item.id_rol+', *ID PRIVILEGIO: '+item.id_privilegio);
+                    //console.log('ID ROL: '+id_rol+', ID PRIVILEGIO: '+id_privilegio);
+                    if(parseInt(item.id_rol) === parseInt(id_rol) && parseInt(item.id_privilegio) === parseInt(id_privilegio)){
+                        ban = true;
+
+                    }
+                });
+
+                console.log(ban);
+                return ban;
+            },
+
+            //DETECTA CUANDO SE PRESIONA EL INPUT
+            agregarVinculacion(id_rol, id_privilegio){
+                var array = this.arrayVinculacionCheck;
+                var ban = 0;
+                var index = 0;
+                for(let vin in array){
+                    if(parseInt(array[vin].id_rol) === parseInt(id_rol) && parseInt(array[vin].id_privilegio) === parseInt(id_privilegio)){
+                    ban = 1;
+                    index = vin;
+                    }
+                }
+                if(ban === 1){
+                    this.arrayVinculacionCheck.splice(index, 1);
+                } else {
+                    this.arrayVinculacionCheck.push({id_rol:id_rol, id_privilegio:id_privilegio});
+                }
+
+            },
+
+            //Guardar vinculacion de privilegios a un rol
+            guardarListaRP(){
+                let me=this;
+                console.log('ORIGINAL: '+JSON.stringify(this.arrayVinculacionOriginal));
+                console.log('CHECK: '+JSON.stringify(this.arrayVinculacionCheck));
+                axios.post('/rolprivilegio/registrar', {
+                    'lista_original': JSON.stringify(this.arrayVinculacionOriginal),
+                    'lista_diferencia':  JSON.stringify(this.arrayVinculacionCheck)
+                })
+                .then(function (response) {
+                    me.cerrarModalVincular();
+                    me.listarRol(me.pagination.current_page, '', 'nombre');
+                }).catch(function (error) {
+                    console.log(error);
+                });
+            },
+
+            //ABRIR MODAL DE VINCULACION DE PRIVILEGIO
+            abrirModalVincular(id_rol, nombre){
+                this.modalVincular = 1;
+                this.id_rol = id_rol;
+                this.nombre = nombre;
+                var array = this.arrayRolesPrivilegios;
+                for(var vin in array){
+                    
+                    if(parseInt(array[vin].id_rol) === parseInt(id_rol)){
+                        //console.log(array[vin].id_rol);
+                        this.arrayVinculacionCheck.push({id_rol:array[vin].id_rol, id_privilegio:array[vin].id_privilegio});
+                        this.arrayVinculacionOriginal.push({id_rol:array[vin].id_rol, id_privilegio:array[vin].id_privilegio});
+                    }
+                }
+                //console.log('ARRo: '+this.arrayVinculacionCheck[0].id_rol);
+                //this.arrayVinculacionOriginal = this.arrayVinculacionCheck;
+                //console.log('ARRA: '+JSON.stringify(this.arrayVinculacionCheck));
+                $('body, html').scrollTop(0); //Subir Scroll
+            },
+
+            //CERRAR MODAL DE VINCULACION DE PRIVILEGIO
+            cerrarModalVincular(){
+                this.modalVincular = 0;
+                //console.log('ARRe: '+JSON.stringify(this.arrayVinculacionCheck));
+                this.arrayVinculacionOriginal.length = 0;
+                this.arrayVinculacionCheck.length = 0;
+                this.id_rol = 0;
+                this.nombre = 0;
+                $('#modal-vinculacion').scrollTop(0); //Volver scroll hasta arriba en modal
+                $('.input-checked_rp').prop("checked", false); //Limpiar checkbox
+            },
+
             //ELIMINAR ROL
             eliminarRol(id_rol){
+                console.log(id_rol);
+                console.log(this.id_rol);
                 let me=this;
                 axios.put('/rol/eliminar', {
                     'id_rol': this.id_rol
@@ -233,6 +423,7 @@
                 this.modalEliminar = 1;
                 this.nombre = data['nombre'];
                 this.id_rol = data['id_rol'];
+                $('body, html').scrollTop(0); //Subir Scroll
             },
 
             //CERRAR MODAL
@@ -293,6 +484,7 @@
 
             //ABRIR MODAL REGISTRAR/ACTUALIZAR
             abrirModal(modelo, accion, data = []){
+                $('body, html').scrollTop(0); //Subir Scroll
             switch(modelo)
             {
                 case "rol":

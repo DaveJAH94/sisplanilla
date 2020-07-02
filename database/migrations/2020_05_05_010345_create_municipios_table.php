@@ -21,6 +21,11 @@ class CreateMunicipiosTable extends Migration
 
             $table->foreign('codigo_departamento')->references('codigo_departamento')->on('departamentos');
         });
+
+        DB::table('departamentos')->insert(array('codigo_departamento'=>'DDD01', 'nombre'=>'San Salvador'));
+        DB::table('departamentos')->insert(array('codigo_departamento'=>'DDD02', 'nombre'=>'Santa Ana'));
+        DB::table('municipios')->insert(array('codigo_municipio'=>'M001', 'codigo_departamento'=>'DDD01', 'nombre'=>'San Salvador'));
+        DB::table('municipios')->insert(array('codigo_municipio'=>'M002', 'codigo_departamento'=>'DDD01', 'nombre'=>'San Marcos'));
     }
 
     /**

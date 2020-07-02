@@ -22,6 +22,8 @@ class CreateDireccionesTable extends Migration
 
             $table->foreign('codigo_municipio')->references('codigo_municipio')->on('municipios');
         });
+
+        DB::table('direcciones')->insert(array('id_direccion'=>'1', 'codigo_municipio'=>'M001', 'ubicacion'=>'Buena vista', 'numero_vivienda'=>'100'));
     }
 
     /**

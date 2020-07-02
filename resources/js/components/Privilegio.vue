@@ -2,8 +2,8 @@
         <main class="main">
             <!-- Breadcrumb -->
             <ol class="breadcrumb">
-                <li class="breadcrumb-item">Home</li>
                 <li class="breadcrumb-item">Administrador</li>
+                <li class="breadcrumb-item">Mantenimiento</li>
                 <li class="breadcrumb-item">Permisos de acceso</li>
                 <li class="breadcrumb-item active">Privilegios</li>
             </ol>
@@ -26,7 +26,7 @@
                                       <option value="entidad">Entidad</option>
                                       <option value="todos">Todos</option>
                                     </select>
-                                    <input type="text" v-model="buscar" @keyup.enter="listarPrivilegios(1, buscar, criterio)" class="form-control" placeholder="Texto a buscar">
+                                    <input type="text" v-model="buscar" @keyup.enter="listarPrivilegios(1, buscar, criterio)" class="form-control col-md-5" placeholder="Texto a buscar">
                                     <button type="submit" @click="listarPrivilegios(1, buscar, criterio)" class="btn btn-primary btn-buscar"><i class="fa fa-search"></i> Buscar</button>
                                 </div>             
                             </div>

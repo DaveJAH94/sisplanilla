@@ -2,8 +2,8 @@
             <main class="main">
             <!-- Breadcrumb -->
             <ol class="breadcrumb">
-                <li class="breadcrumb-item">Home</li>
                 <li class="breadcrumb-item">Administrador</li>
+                <li class="breadcrumb-item">Mantenimiento</li>
                 <li class="breadcrumb-item active">Usuarios</li>
             </ol>
             <div class="container-fluid">
@@ -19,11 +19,11 @@
                         <div class="form-group row">
                             <div class="col-md-6">
                                 <div class="input-group">
-                                    <select class="form-control col-md-3" v-model="criterio">
+                                    <select class="form-control col-md-4" v-model="criterio">
                                       <option value="username">Nombre Usuario</option>
                                       <option value="codigo_empleado">Codigo Empleado</option>
                                     </select>
-                                    <input type="text" v-model="buscar" @keyup.enter="listarUsuario(1, buscar, criterio)" class="form-control" placeholder="Texto a buscar">
+                                    <input type="text" v-model="buscar" @keyup.enter="listarUsuario(1, buscar, criterio)" class="form-control col-md-5" placeholder="Texto a buscar">
                                     <button type="submit" @click="listarUsuario(1, buscar, criterio)" class="btn btn-primary btn-buscar"><i class="fa fa-search"></i> Buscar</button>
                                 </div>
                             </div>
@@ -47,9 +47,12 @@
                                     <td v-text="usuario.codigo_empleado"></td>
                                     <td v-text="usuario.username"></td>
                                     <td v-text="usuario.nombre_rol"></td>
-                                    <td v-text="usuario.activo"></td>
-                                    <td v-text="usuario.first_session"></td>
-                                    <td v-text="usuario.last_session"></td>
+                                    <td v-if="usuario.activo == '1'">Sí</td>
+                                    <td v-if="usuario.activo == '0'">No</td>
+                                    <td v-if="usuario.first_session != null" v-text="usuario.first_session"></td>
+                                        <td v-else>N/A</td>
+                                    <td v-if="usuario.last_session != null" v-text="usuario.last_session"></td>
+                                        <td v-else>N/A</td>
                                     <td style="text-align: center;">
                                         <button type="button" @click="abrirModal('usuario', 'actualizar', usuario)" class="btn btn-warning btn-sm btn-circle-text-white">
                                           <i class="icon-pencil"></i>
@@ -90,31 +93,50 @@
                         </div>
                         <div class="modal-body" style="padding:4%">
                             <form action="" method="post" enctype="multipart/form-data" class="form-horizontal"> 
-                                <div class="form-group">
-                                    <label for="username">Nombre de usuario</label>
-                                    <input type="text" v-model="username" class="form-control" placeholder="Ingrese el nombre de usuario">
+                                <div v-if="tipoAccion == 1" class="form-group">
+                                    <label for="text">Buscar empleado por codigo</label>
+                                    <div class="row" style="margin-left:0.45%">
+                                        <input v-model="codigo_empleado" maxlength="6" type="text" class="form-control col-md-3" placeholder="Ej. AA1000">
+                                        <button id="btn_empleado" @click="selectEmpleado(codigo_empleado)" type="button" class="btn btn-success btn-buscar"><i class="fa fa-search"></i></button>
+                                        <input id="empleado_input_e" type="text" class="form-control col-sm-7" style="font-style:italic; margin-left:5.5%; border:0; border-radius:6px; background: #eee" :value="nombres+' '+apellidos+'      '+codigo_empleado_res" disabled>      
+                                        <span class="help-block" style="font-size:80%; margin-top:1%">(*) Debe consultar el codigo de empleado y si existe, se asociara ese empleado al usuario</span>
+                                    </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="password">Contraseña</label>
-                                    <input type="text" v-model="password" class="form-control" placeholder="Ingrese la contraseña">
+                                <div v-if="tipoAccion == 2" class="form-group">
+                                    <label for="text">Empleado</label>
+                                    <input type="text" class="form-control" style="font-style:italic; border:0; border-radius:6px; background: #eee" :value="nombres+' '+apellidos+'      '+codigo_empleado_res" disabled>
+                                </div>
+                                <div v-if="tipoAccion == 2" class="form-group">
+                                    <label for="text">Username</label>
+                                    <input type="text" class="form-control" style="font-style:italic; border:0; border-radius:6px; background: #eee" :value="username" disabled>
                                 </div>
                                 <div class="form-group">
                                     <label for="rol">Rol</label>
-                                    <select v-model="id_rol" class="form-control">
+                                    <select id="rol_input_e" v-model="id_rol" class="form-control">
                                         <option value="0" selected>-- Seleccione rol --</option>
                                         <option v-for="rol in arrayRol" :key="rol.id_rol" :value="rol.id_rol" v-text="rol.nombre"></option>
                                     </select>
                                 </div>
-                                <div class="form-group">
+                               <!--  <div class="form-group">
+                                    <label for="username">Nombre de usuario</label>
+                                    <input type="text" v-model="username" class="form-control" placeholder="Ingrese el nombre de usuario">
+                                </div> -->
+                                <div v-if="tipoAccion == 1" class="form-group">
+                                    <label for="password">Contraseña</label>
+                                    <input id="password_input_e" type="text" v-model="password" maxlength="20" class="form-control" placeholder="Ingrese la contraseña">
+                                </div>
+                                
+<!--                                 <div class="form-group">
                                     <label for="empleado">Empleado</label>
                                     <select v-model="codigo_empleado" class="form-control">
                                         <option value="" selected>-- Seleccione empleado --</option>
                                         <option v-for="empleado in arrayEmpleado" :key="empleado.codigo_empleado" :value="empleado.codigo_empleado" v-text="empleado.nombres+' '+empleado.apellidos"></option>
                                     </select>
-                                </div>
-                                <div style="margin-left:5%" class="form-group form-check">
-                                    <input type="checkbox" v-model="activo" class="form-check-input" placeholder="Ingrese estado del usuario">
-                                    <label for="activo" class="form-check-label">Activo</label>
+                                </div> -->
+                                <div class="form-group">
+                                    <label for="activo">Activo</label>
+                                    <input v-if="activo==1" checked style="margin-left:5%" type="checkbox" v-model="activo" :value="activo" class="form-check-input" placeholder="Ingrese estado del usuario">
+                                    <input v-if="activo==0" style="margin-left:5%" type="checkbox" v-model="activo" :value="activo" class="form-check-input" placeholder="Ingrese estado del usuario">
                                 </div>
                                 <div v-show="errorUsuario" class="form-group div-error">
                                     <div class="text-center text-error">
@@ -127,8 +149,8 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary btn-circle-text-white" @click="cerrarModal()">Cerrar</button>
-                            <button type="button" v-if="tipoAccion==1" @click="registrarRol()" class="btn btn-primary btn-circle">Guardar</button>
-                            <button type="button" v-if="tipoAccion==2" @click="actualizarRol()"  class="btn btn-primary btn-circle">Actualizar</button>
+                            <button type="button" v-if="tipoAccion==1" @click="registrarUsuario()" class="btn btn-primary btn-circle">Guardar</button>
+                            <button type="button" v-if="tipoAccion==2" @click="actualizarUsuario()"  class="btn btn-primary btn-circle">Actualizar</button>
                         </div>
                     </div>
                     <!-- /.modal-content -->
@@ -141,17 +163,17 @@
                 <div class="modal-dialog modal-danger" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h4 class="modal-title">Eliminar Rol</h4>
+                            <h4 class="modal-title">Eliminar Usuario</h4>
                             <button type="button" class="close" @click="cerrarModalEliminar()" aria-label="Close">
                               <span aria-hidden="true" style="color:white">×</span>
                             </button>
                         </div>
                         <div class="modal-body">
-                            <p>Estas seguro de eliminar el Rol: <span v-text="nombre"></span>? </p>
+                            <p>Estas seguro de eliminar el Usuario: <span v-text="username"></span>? </p>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary btn-circle-text-white" @click="cerrarModalEliminar()">Cerrar</button>
-                            <button type="button" class="btn btn-danger btn-circle" @click="eliminarRol(id_rol)">Eliminar</button>
+                            <button type="button" class="btn btn-danger btn-circle" @click="eliminarUsuario(id_usuario)">Eliminar</button>
                         </div>
                     </div>
                     <!-- /.modal-content -->
@@ -170,6 +192,7 @@
                 id_rol: 0,
                 nombre_rol: '',
                 codigo_empleado: '',
+                codigo_empleado_res: '',
                 username: '',
                 password: '',
                 activo: 0,
@@ -198,7 +221,8 @@
                 arrayEmpleado: [],
                 nombre: '',
                 nombres: '',
-                apellidos: ''
+                apellidos: '',
+                empleado: []
             }
         },
         computed:{
@@ -254,13 +278,40 @@
                     console.log(error);
                 });
             },
-            selectEmpleado(){
+            selectEmpleado(codigo_empleado){
                 let me=this;
-                var url= '/empleado/selectEmpleado';
+                var url= '/empleado/selectEmpleado?codigo_empleado='+codigo_empleado;
                 axios.get(url).then(function (response) {
                     var respuesta  = response.data;
-                    console.log(respuesta.empleados);
-                    me.arrayEmpleado = respuesta.empleados;
+                    me.nombres = '';
+                    me.apellidos = '';
+                    me.codigo_empleado_res = '';
+                    console.log("TIPO EMPLEADO[0]: "+ typeof response.data.empleado[0]);
+                    console.log("RESPONSE "+response);
+                    console.log("DATA: "+response.data);
+                    console.log("EMPLEADO: "+response.data.empleado[0]);
+                    if(me.tipoAccion == 1){
+                        if(response.data.empleado[0] !== null && typeof response.data.empleado[0] !== 'undefined'){
+                            console.log('BANDERA: '+response.data.bandera);
+                            if(response.data.bandera != 0){
+                                me.nombres = respuesta.empleado[0].primer_nombre+" "+respuesta.empleado[0].segundo_nombre;
+                                me.apellidos = respuesta.empleado[0].primer_apellido+" "+respuesta.empleado[0].segundo_apellido;
+                                me.codigo_empleado_res = codigo_empleado;
+                                document.getElementById("empleado_input_e").style.border = "1px solid #ccc";
+                            }else{
+                                $('#empleado_input_e').val("El empleado ya es usuario");
+                            }
+                        } else {
+                            console.log("NO EXISTE");
+                            //$('#btn_empleado').trigger('click');
+                            $('#empleado_input_e').val("El empleado no existe");
+                        }
+                    } else {
+                        me.nombres = respuesta.empleado[0].primer_nombre+" "+respuesta.empleado[0].segundo_nombre;
+                        me.apellidos = respuesta.empleado[0].primer_apellido+" "+respuesta.empleado[0].segundo_apellido;
+                        me.codigo_empleado_res = codigo_empleado;
+                    }
+                    
                 })
                 .catch(function (error) {
                     console.log(error);
@@ -275,14 +326,14 @@
             },
 
             //ELIMINAR ROL
-            eliminarRol(id_rol){
+            eliminarUsuario(id_usuario){
                 let me=this;
-                axios.put('/rol/eliminar', {
-                    'id_rol': this.id_rol
+                axios.put('/usuario/eliminar', {
+                    'id_usuario': this.id_usuario
                 })
                 .then(function (response) {
                     me.cerrarModalEliminar();
-                    me.listarRol(1, '', 'nombre');
+                    me.listarUsuario(1, '', 'username');
                 }).catch(function (error) {
                     console.log(error);
                 });
@@ -291,64 +342,105 @@
             //ABRIR MODAL ELIMINAR
             abrirModalEliminar(data = []){
                 this.modalEliminar = 1;
-                this.nombre = data['nombre'];
-                this.id_rol = data['id_rol'];
+                this.username = data['username'];
+                this.id_usuario = data['id_usuario'];
             },
 
             //CERRAR MODAL
             cerrarModalEliminar(){
                 this.modalEliminar = 0;
-                this.nombre = '';
-                this.id_rol = 0;
+                this.username = '';
+                this.id_usuario = 0;
             },
 
             //REGISTRAR OBJETO
-            registrarRol(){
-                if (this.validarRol()){
+            registrarUsuario(){
+                if (this.validarUsuario()){
                     return;
                 }
 
                 let me=this;
-                axios.post('/rol/registrar', {
-                    'nombre': this.nombre,
+                axios.post('/usuario/registrar', {
+                    'nombres': this.nombres,
+                    'apellidos': this.apellidos,
+                    'username': this.username,
+                    'id_rol': this.id_rol,
+                    'codigo_empleado': this.codigo_empleado_res,
+                    'password': this.password,
+                    'activo': this.activo
                 })
                 .then(function (response) {
                     me.cerrarModal();
-                    me.listarRol(1, '', 'nombre');
+                    me.listarUsuario(1, '', 'username');
                 }).catch(function (error) {
                     console.log(error);
                 });
             },
 
             //ACTUALIZAR OBJETO
-            actualizarRol(){
-                if (this.validarRol()){
+            actualizarUsuario(){
+                if (this.validarUsuario()){
                     return;
                 }
 
                 let me=this;
-                axios.put('/rol/actualizar', {
-                    'nombre': this.nombre,
-                    'id_rol': this.id_rol
+                axios.put('/usuario/actualizar', {
+                    'id_usuario': this.id_usuario,
+                    'nombres': this.nombres,
+                    'apellidos': this.apellidos,
+                    'username': this.username,
+                    'id_rol': this.id_rol,
+                    'codigo_empleado': this.codigo_empleado_res,
+                    'password': this.password,
+                    'activo': this.activo
                 })
                 .then(function (response) {
                     me.cerrarModal();
-                    me.listarRol(1, '', 'nombre');
+                    me.listarUsuario(1, '', 'username');
                 }).catch(function (error) {
                     console.log(error);
                 });
-            },            
+            },           
 
             //VALIDACION DE CAMPOS
-            validarRol(){
-                this.errorRol = 0;
-                this.errorMostrarMsjRol = [];
+            validarUsuario(){
 
-                if (!this.nombre) this.errorMostrarMsjRol.push("El nombre del rol no puede estar vacío.");
+                var empleado_input = document.getElementById("empleado_input_e");
+                var rol_input = document.getElementById("rol_input_e");
+                var password_input =  document.getElementById("password_input_e");
 
-                if (this.errorMostrarMsjRol.length) this.errorRol = 1;
+                this.errorMostrarMsjUsuario = [];
+                this.errorUsuario = 0;
 
-                return this.errorRol;
+                if(empleado_input != null){
+                    if (!this.codigo_empleado_res){
+                    empleado_input.style.border = "1px solid red";
+                    this.errorMostrarMsjUsuario.push("Debe asociar un empleado valido");
+                    }else{
+                        empleado_input.style.border = "1px solid #ccc";
+                    }
+                }
+                
+                if (!this.id_rol || rol_input.value.length == 0 || rol_input.value === 0 || rol_input.value === '0'){
+                    rol_input.style.border = "1px solid red";
+                    this.errorMostrarMsjUsuario.push("El usuario debe tener un Rol");
+                }else{
+                    rol_input.style.border = "1px solid #ccc";
+                }
+
+                if(password_input!=null){
+                   if (!this.password){
+                    password_input.style.border = "1px solid red";
+                    this.errorMostrarMsjUsuario.push("El usuario debe tener una contrasenia");
+                    }else{
+                        password_input.style.border = "1px solid #ccc";
+                    } 
+                }
+                
+
+                if (this.errorMostrarMsjUsuario.length) this.errorUsuario = 1;
+
+                return this.errorUsuario;
             },
 
             //ABRIR MODAL REGISTRAR/ACTUALIZAR
@@ -361,34 +453,61 @@
                             case 'registrar':
                                 {
                                     this.modal = 1;
-                                    this.nombre = '';
                                     this.tituloModal = 'Registrar Usuario';
                                     this.tipoAccion = 1;
+                                    this.nombres = '';
+                                    this.apellidos = '';
+                                    this.username = '';
+                                    this.id_rol = 0;
+                                    this.codigo_empleado = '';
+                                    this.password = '';
+                                    this.activo = 0;
                                     break
                                 }
                             case 'actualizar':
                                 {
                                     this.modal = 1;
-                                    this.nombre = data['nombre'];
-                                    this.id_rol = data['id_rol'];
                                     this.tituloModal = 'Actualizar Usuario';
                                     this.tipoAccion = 2;
+                                    this.id_usuario = data['id_usuario'];
+                                    /* this.nombres = data['nombres'];
+                                    this.apellidos = data['apellidos']; */
+                                    this.username = data['username'];
+                                    this.id_rol = data['id_rol'];
+                                    this.codigo_empleado = data['codigo_empleado'];
+                                    this.password = data['password'];
+                                    this.activo = parseInt(data['activo']);
+                                    /* console.log(data['activo']+' '+typeof(data['activo'])); */
+                                    console.log(data['first_session']);
+                                    this.selectEmpleado(data['codigo_empleado']);
                                     break
                                 }
                         }
                     }
                 this.selectRol();   
-                this.selectEmpleado(); 
+                // this.selectEmpleado(); 
             }
         },
 
         //CERRAR MODAL
         cerrarModal(){
             this.modal = 0;
-            this.nombre = '';
+            this.nombres = '',
+            this.apellidos = '',
+            this.username = '',
+            this.id_rol = 0,
+            this.codigo_empleado = '',
+            this.password = '',
+            this.activo = 0,
+            this.empleado = [],
             this.tituloModal = '';
-            this.errorMostrarMsjRol = [];
-            this.errorRol = 0;
+            this.errorMostrarMsjUsuario = [];
+            this.errorUsuario = 0;
+            this.codigo_empleado_res = '';
+            if(document.getElementById("empleado_input_e")!=null) document.getElementById("empleado_input_e").value = "";
+            if(document.getElementById("empleado_input_e")!=null) document.getElementById("empleado_input_e").style.border = "1px solid #ccc";
+            document.getElementById("rol_input_e").style.border = "1px solid #ccc";
+            if(document.getElementById("password_input_e")!=null) document.getElementById("password_input_e").style.border = "1px solid #ccc";
         },
 
         },

@@ -25,6 +25,11 @@ Vue.component('propuesta2', require('./components/Propuesta2.vue').default);
 Vue.component('rol', require('./components/Rol.vue').default);
 Vue.component('privilegio', require('./components/Privilegio.vue').default);
 Vue.component('usuario', require('./components/Usuario.vue').default);
+Vue.component('empleado', require('./components/Empleado.vue').default);
+Vue.component('ingreso', require('./components/Ingreso.vue').default);
+Vue.component('categoriacomision', require('./components/Categoria_Comision.vue').default);
+Vue.component('puesto', require('./components/Puesto.vue').default);
+Vue.component('unidadorganizacional', require('./components/Unidad_Organizacional.vue').default);
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to

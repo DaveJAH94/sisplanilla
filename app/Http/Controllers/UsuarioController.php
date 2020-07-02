@@ -25,7 +25,7 @@ class UsuarioController extends Controller
         else{
             $usuarios = Usuario::join('roles', 'usuarios.id_rol', '=', 'roles.id_rol')
             ->select('usuarios.id_usuario', 'usuarios.id_rol', 'usuarios.codigo_empleado', 'usuarios.username', 'usuarios.password', 'usuarios.activo', 'usuarios.first_session', 'usuarios.last_session', 'usuarios.intentos_fallidos', 'roles.nombre as nombre_rol')
-            ->where('usuarios'.$criterio, 'like', '%'. $buscar . '%')
+            ->where('usuarios.'.$criterio, 'like', '%'. $buscar . '%')
             ->orderBy('usuarios.id_usuario', 'desc')->paginate(6);
         }
 
@@ -51,24 +51,56 @@ class UsuarioController extends Controller
     
     //LISTAR EMPLEADOS
     public function selectEmpleados(Request $request){
+
         //if (!$request->ajax()) return redirect('/');
-        $empleados = Empleado::select('codigo_empleado','nombres', 'apellidos')->orderBy('nombres', 'asc')->get();
-        return ['empleados' => $empleados];
-    }   
+
+        $buscarCodigo = $request->codigo_empleado;
+
+        $usuario = Usuario::where('codigo_empleado', '=', $buscarCodigo)->exists();   
+        
+        $empleado = Empleado::select('primer_nombre', 'segundo_nombre', 'primer_apellido', 'segundo_apellido')
+                            ->where('codigo_empleado', '=', $buscarCodigo)
+                            ->get();
+        
+        if(!$usuario){
+            return ['empleado' => $empleado];
+        }else{
+            return ['empleado' => $empleado, 'bandera' => '0'];
+        }
+
+        
+    
+    }
 
     //GUARDAR USUARIO
     public function store(Request $request)
     {
         if (!$request->ajax()) return redirect('/');
+
+        
+
+        function crearUsername($request){
+            $nombres = $request->nombres;
+            $apellidos = $request->apellidos;
+            $uname = strtolower(substr($nombres, 0, strpos($nombres, ' ')).'.'.substr($apellidos, 0, strpos($apellidos, ' ')));
+            if(strlen($uname)>=25){
+                $uname = substr($uname, 0, 25);
+            }
+            return $uname;
+        }
+
         $usuario = new Usuario();
         $usuario->id_rol = $request->id_rol;
         $usuario->codigo_empleado = $request->codigo_empleado;
-        $usuario->username = $request->username;
-        $usuario->password = $request->password;
+        $usuario->username = crearUsername($request);
+        //$usuario->password = $request->password;
+        //$usuario->SHA256($request->password);
+        //$usuario->hash('sha256', $request->password);
+        $usuario->password = hash('sha256', $request->password);
         $usuario->activo = $request->activo;
-        $usuario->first_session = $request->first_session;
-        $usuario->last_session = $request->last_session;
-        $usuario->intentos_fallidos = $request->intentos_fallidos;
+        //$usuario->first_session = $request->first_session;
+        //$usuario->last_session = $request->last_session;
+        //$usuario->intentos_fallidos = $request->intentos_fallidos;
         $usuario->save();        
     }
 
@@ -78,13 +110,8 @@ class UsuarioController extends Controller
         if (!$request->ajax()) return redirect('/');
         $usuario = Usuario::findOrFail($request->id_usuario);
         $usuario->id_rol = $request->id_rol;
-        $usuario->codigo_empleado = $request->codigo_empleado;
-        $usuario->username = $request->username;
-        $usuario->password = $request->password;
+        //$usuario->password = $request->password;
         $usuario->activo = $request->activo;
-        $usuario->first_session = $request->first_session;
-        $usuario->last_session = $request->last_session;
-        $usuario->intentos_fallidos = $request->intentos_fallidos;
         $usuario->save();   
     }
 

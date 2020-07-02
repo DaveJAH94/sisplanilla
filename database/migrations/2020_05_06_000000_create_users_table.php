@@ -19,7 +19,7 @@ class CreateUsersTable extends Migration
             $table->integer('id_rol')->unsigned();
             $table->char('codigo_empleado', 6);
             $table->string('username', 25)->unique();
-            $table->string('password', 20);
+            $table->string('password', 64);
             $table->boolean('activo')->default(1);
             $table->datetime('first_session')->nullable();
             $table->datetime('last_session')->nullable();

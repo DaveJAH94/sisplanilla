@@ -18,6 +18,10 @@ class CreateTiposContactoTelefonicoTable extends Migration
             $table->string('titulo',10);
             $table->timestamps();
         });
+
+        DB::table('tipos_contacto_telefonico')->insert(array('id_tipo_contacto_telefonico'=>'1', 'titulo'=>'Movil'));
+        DB::table('tipos_contacto_telefonico')->insert(array('id_tipo_contacto_telefonico'=>'2', 'titulo'=>'Casa'));
+        DB::table('tipos_contacto_telefonico')->insert(array('id_tipo_contacto_telefonico'=>'3', 'titulo'=>'Oficina'));
     }
 
     /**
